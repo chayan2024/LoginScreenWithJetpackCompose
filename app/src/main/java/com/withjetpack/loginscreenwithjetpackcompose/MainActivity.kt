@@ -4,25 +4,26 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
-import com.withjetpack.loginscreenwithjetpackcompose.ui.theme.LoginScreenWithJetpackComposeTheme
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.material.Button
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.withjetpack.loginscreenwithjetpackcompose.ui.theme.LoginScreenWithJetpackComposeTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -34,7 +35,8 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colors.background
                 ) {
-                    LoginScreen()
+                    CurvedBackgroundShape()
+                    LoginForm()
                 }
             }
         }
@@ -42,113 +44,155 @@ class MainActivity : ComponentActivity() {
 
 
     @Composable
-    fun LoginScreen() {
-        Box(
-            modifier = Modifier.fillMaxSize(),
-        ) {
-            // Background with a custom curved shape
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(color = Color.Blue),
-            )
-            {
-                CurvedBackgroundShape()
-            }
+    fun LoginForm() {
 
-            // Login Form
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
+        var username by remember {
+            mutableStateOf("")
+        }
+        var password by remember {
+            mutableStateOf("")
+        }
+        var isPasswordVisible by remember {
+            mutableStateOf(false)
+        }
+        val isFormValid by derivedStateOf {
+            username.isNotBlank() && password.length >= 7
+        }
+        Column(
+            Modifier.fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Top
+        ) {
+
+            Card(
+                Modifier
+                    .weight(2f)
+                    .padding(10.dp,60.dp,10.dp,60.dp),
+                shape = RoundedCornerShape(32.dp)
             ) {
-                // Your login form components go here
-                Text(
-                    text = "Login",
-                    fontSize = 24.sp,
-                    color = Color.White
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-
-                BasicTextField(
-                    value = "Username",
-                    onValueChange = { /* Handle text changes */ },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(56.dp)
-                        .padding(8.dp)
-                        .clip(MaterialTheme.shapes.medium)
-                        .background(Color.White)
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                BasicTextField(
-                    value = "Password",
-                    onValueChange = { /* Handle text changes */ },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(56.dp)
-                        .padding(8.dp)
-                        .clip(MaterialTheme.shapes.medium)
-                        .background(Color.White)
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Button(
-                    onClick = { /* Handle login button click */ },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(56.dp),
+                Column(
+                    Modifier
+                        .fillMaxSize()
+                        .padding(32.dp)
                 ) {
-                    Text(text = "Login")
+                    Text(text = "Welcome to jetpack Compose Login !!", fontWeight = FontWeight.Bold, fontSize = 32.sp)
+                    Column(
+                        Modifier.fillMaxSize(),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Spacer(modifier = Modifier.weight(0.5f))
+                        OutlinedTextField(
+                            modifier = Modifier.fillMaxWidth(),
+                            value = username,
+                            onValueChange = { username = it },
+                            label = { Text(text = "Username") },
+                            singleLine = true,
+                            trailingIcon = {
+                                if (username.isNotBlank())
+                                    IconButton(onClick = { username = "" }) {
+                                        Icon(
+                                            imageVector = Icons.Filled.Clear,
+                                            contentDescription = ""
+                                        )
+                                    }
+                            }
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        OutlinedTextField(
+                            modifier = Modifier.fillMaxWidth(),
+                            value = password,
+                            onValueChange = { password = it },
+                            label = { Text(text = "Password") },
+                            singleLine = true,
+                            keyboardOptions = KeyboardOptions(
+                                keyboardType = KeyboardType.Password,
+                                imeAction = ImeAction.Done
+                            ),
+                            visualTransformation = if (isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                            trailingIcon = {
+                                PasswordVisibilityIcon(
+                                    isPasswordVisible = isPasswordVisible,
+                                    onToggleClick = { isPasswordVisible = !isPasswordVisible }
+                                )
+                            }
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Button(
+                            onClick = {},
+                            enabled = isFormValid,
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(16.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                backgroundColor = Color.Red, // Set the default background color
+                                contentColor = Color.White // Set the text color
+                            )
+                        ) {
+                            Text(text = "Log In")
+                        }
+                        Spacer(modifier = Modifier.weight(1f))
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            TextButton(onClick = {}) {
+                                Text(text = "Sign Up")
+                            }
+                            TextButton(onClick = { }) {
+                                Text(text = "Forgot Password?")
+                            }
+                        }
+                    }
                 }
             }
         }
-    }
-
-    @Composable
-    fun CurvedBackgroundShape() {
-        val curveHeight = 150.dp
-        val curveOffset = 20.dp
-
-        Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.TopCenter
-        ) {
-            Canvas(
-                modifier = Modifier.fillMaxSize(),
-                onDraw = {
-                    val path = Path().apply {
-                        moveTo(0f, 0f)
-                        lineTo(size.width, 0f)
-                        lineTo(size.width, size.height - curveHeight.toPx())
-                        quadraticBezierTo(
-                            size.width / 2f,
-                            size.height + curveOffset.toPx(),
-                            0f,
-                            size.height - curveHeight.toPx()
-                        )
-                        close()
-                    }
-                    drawPath(path, color = Color.Blue)
-                }
-            )
-        }
-    }
-
-    @Preview
-    @Composable
-    fun LoginScreenPreview() {
-        LoginScreen()
     }
 }
 
+@Composable
+fun PasswordVisibilityIcon(
+    isPasswordVisible: Boolean,
+    onToggleClick: () -> Unit
+) {
+    val icon: ImageVector =
+        if (isPasswordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff
+
+    IconButton(
+        onClick = onToggleClick
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = if (isPasswordVisible) "Hide Password" else "Show Password"
+        )
+    }
+}
 
 @Composable
-fun Greeting(name: String) {
-    Text(text = "Hello $name!")
+fun CurvedBackgroundShape() {
+    val curveHeight = 100.dp
+    val curveOffset = 20.dp
+
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.TopCenter
+    ) {
+        Canvas(
+            modifier = Modifier.fillMaxSize(),
+            onDraw = {
+                val path = Path().apply {
+                    moveTo(0f, 0f)
+                    lineTo(size.width, 0f)
+                    lineTo(size.width, size.height - curveHeight.toPx())
+                    quadraticBezierTo(
+                        size.width / 2f,
+                        size.height + curveOffset.toPx(),
+                        0f,
+                        size.height - curveHeight.toPx()
+                    )
+                    close()
+                }
+                drawPath(path, color = Color.Blue)
+            }
+        )
+    }
 }
